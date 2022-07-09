@@ -14,11 +14,6 @@ export interface RegisterRequestPayload {
   password: string;
 }
 
-export interface LoginRequestPayload {
-  username: string;
-  password: string;
-}
-
 export const JWTRegistrationController = JWTTokenResponder(
   class JWTRegistrationController {
     constructor(

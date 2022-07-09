@@ -1,7 +1,7 @@
 import Ajv, { Schema } from "ajv";
 import { expect } from "chai";
-import { Application, createExpressApp } from "./express-app";
-import { RequestBodySchemaValidator } from "./schema-validation";
+import { Application, createExpressApp } from "../application";
+import { RequestBodySchemaValidatorMiddleware } from "./schema-validation";
 
 describe("schema validation", () => {
   let app!: Application;
@@ -19,7 +19,7 @@ describe("schema validation", () => {
       required: ["foo"],
       additionalProperties: false,
     };
-    const validator = new RequestBodySchemaValidator(ajv, schema);
+    const validator = new RequestBodySchemaValidatorMiddleware(ajv, schema);
     validator.compileSchema();
 
     app.expressApp.post(

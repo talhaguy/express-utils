@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { Application, createExpressApp } from "../express-app";
+import { Application, createExpressApp } from "../application";
 import { JWTHelper, PasswordHasher } from "./models";
 import {
   REFRESH_TOKEN_COOKIE_NAME,

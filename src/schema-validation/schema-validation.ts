@@ -3,7 +3,7 @@ import Ajv, { Schema, ValidateFunction } from "ajv";
 
 export type SchemaValidator = typeof Ajv;
 
-export class RequestBodySchemaValidator {
+export class RequestBodySchemaValidatorMiddleware {
   private _validate?: ValidateFunction;
 
   constructor(private _ajv: Ajv, private _schema: Schema) {}
@@ -30,7 +30,7 @@ export class RequestBodySchemaValidator {
 
 export function createRequestBodySchemaValidator(schema: Schema) {
   const ajv = new Ajv();
-  const validator = new RequestBodySchemaValidator(ajv, schema);
+  const validator = new RequestBodySchemaValidatorMiddleware(ajv, schema);
   validator.compileSchema();
   return validator;
 }

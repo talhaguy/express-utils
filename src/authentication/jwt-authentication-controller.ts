@@ -12,11 +12,6 @@ import {
   UserValidator,
 } from "./models";
 
-export interface RegisterRequestPayload {
-  username: string;
-  password: string;
-}
-
 export interface LoginRequestPayload {
   username: string;
   password: string;
