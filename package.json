@@ -7,7 +7,8 @@
     "build": "tsc",
     "lint": "eslint src/**",
     "test": "mocha",
-    "test:watch": "mocha --watch"
+    "test:watch": "mocha --watch",
+    "clean": "rm -rf dist"
   },
   "keywords": ["express", "utilities", "middleware"],
   "author": "Muhammad Talha",

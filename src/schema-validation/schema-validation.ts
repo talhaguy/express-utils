@@ -27,10 +27,3 @@ export class RequestBodySchemaValidatorMiddleware {
     next();
   }
 }
-
-export function createRequestBodySchemaValidator(schema: Schema) {
-  const ajv = new Ajv();
-  const validator = new RequestBodySchemaValidatorMiddleware(ajv, schema);
-  validator.compileSchema();
-  return validator;
-}
