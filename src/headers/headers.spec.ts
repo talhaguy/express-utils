@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { Application, createExpressApp } from "../application";
+import { Application, createExpressApp } from "../application/application";
 import { checkHeader } from "./headers";
 
 describe("headers", () => {

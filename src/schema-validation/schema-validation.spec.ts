@@ -1,6 +1,6 @@
 import Ajv, { Schema } from "ajv";
 import { expect } from "chai";
-import { Application, createExpressApp } from "../application";
+import { Application, createExpressApp } from "../application/application";
 import { RequestBodySchemaValidatorMiddleware } from "./schema-validation";
 
 describe("schema validation", () => {

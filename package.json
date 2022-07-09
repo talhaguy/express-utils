@@ -1,5 +1,5 @@
 {
-  "name": "jwt-auth-utils",
+  "name": "express-utils",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
