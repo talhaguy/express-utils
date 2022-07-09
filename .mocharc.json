@@ -1,0 +1,9 @@
+{
+  "extension": "ts",
+  "reporter": "spec",
+  "diff": true,
+  "inlineDiffs": true,
+  "spec": "src/**/*.spec.ts",
+  "require": "ts-node/register",
+  "timeout": 10000
+}
