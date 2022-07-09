@@ -1,3 +1,5 @@
+import { Response } from "express";
+
 export interface Constructor<T> {
   new (...args: any[]): T;
 }
@@ -31,10 +33,25 @@ export interface UserValidator {
   password: (password: string) => boolean;
 }
 
+export enum AuthenticationErrorType {
+  InvalidRequestPayload,
+  NoExistingUser,
+  UserExists,
+  ErrorGettingUser,
+  ErrorCreatingUser,
+  PaswordMismatch,
+  NoRefreshToken,
+  NoJWTToken,
+  InvalidJWTToken,
+  InvalidRefreshToken,
+  TokenCreateError,
+  ErrorWhileHashingPassword,
+}
+
+export interface ErrorHandler {
+  (res: Response, errorType: AuthenticationErrorType, error?: Error): void;
+}
+
 export interface JWTTokenPayload {
   username: string;
 }
-
-export const REFRESH_TOKEN_COOKIE_NAME = "refreshtoken";
-export const JWT_TOKEN_EXPIRY_MS = 5 * 60 * 1000;
-export const REFRESH_TOKEN_EXPIRY_MS = 30 * 60 * 1000;

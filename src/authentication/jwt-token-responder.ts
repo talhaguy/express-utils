@@ -1,20 +1,25 @@
 import { Response } from "express";
 import {
+  AuthenticationErrorType,
   Constructor,
+  ErrorHandler,
   JWTHelper,
-  JWT_TOKEN_EXPIRY_MS,
-  REFRESH_TOKEN_COOKIE_NAME,
-  REFRESH_TOKEN_EXPIRY_MS,
 } from "./models";
+import {
+  DEFAULT_JWT_TOKEN_EXPIRY_MS,
+  REFRESH_TOKEN_COOKIE_NAME,
+  DEFAULT_REFRESH_TOKEN_EXPIRY_MS,
+} from "./constants";
 
 export function JWTTokenResponder<
   T extends Constructor<{
     jwtSecret: string;
     refreshSecret: string;
     jwtHelper: JWTHelper;
+    errorHandler: ErrorHandler;
   }>
 >(superClass: T) {
-  return class JWTTokenResponder extends superClass {
+  return class JWTTokenResponderImpl extends superClass {
     public async respondWithTokens(res: Response, username: string) {
       let jwtToken: string;
       try {
@@ -23,10 +28,14 @@ export function JWTTokenResponder<
           {
             username,
           },
-          JWT_TOKEN_EXPIRY_MS
+          DEFAULT_JWT_TOKEN_EXPIRY_MS
         );
       } catch (err) {
-        res.status(500).end();
+        this.errorHandler(
+          res,
+          AuthenticationErrorType.TokenCreateError,
+          err as Error
+        );
         return;
       }
 
@@ -37,10 +46,14 @@ export function JWTTokenResponder<
           {
             username,
           },
-          REFRESH_TOKEN_EXPIRY_MS
+          DEFAULT_REFRESH_TOKEN_EXPIRY_MS
         );
-      } catch {
-        res.status(500).end();
+      } catch (err) {
+        this.errorHandler(
+          res,
+          AuthenticationErrorType.TokenCreateError,
+          err as Error
+        );
         return;
       }
 
@@ -55,3 +68,7 @@ export function JWTTokenResponder<
     }
   };
 }
+
+export type JWTTokenResponderType = InstanceType<
+  ReturnType<typeof JWTTokenResponder>
+>;

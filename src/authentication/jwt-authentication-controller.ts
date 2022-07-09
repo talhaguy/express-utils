@@ -1,13 +1,15 @@
 import { Request, Response } from "express";
+import { REFRESH_TOKEN_COOKIE_NAME } from "./constants";
 import { JWTTokenResponder } from "./jwt-token-responder";
 import {
+  AuthenticationErrorType,
+  ErrorHandler,
   JWTHelper,
   JWTTokenPayload,
   PasswordHasher,
   User,
   UserRepo,
   UserValidator,
-  REFRESH_TOKEN_COOKIE_NAME,
 } from "./models";
 
 export interface RegisterRequestPayload {
@@ -28,7 +30,8 @@ export const JWTAuthenticationController = JWTTokenResponder(
       public _jwtHelper: JWTHelper,
       public _userRepo: UserRepo,
       public _userValidator: UserValidator,
-      public _passwordHasher: PasswordHasher
+      public _passwordHasher: PasswordHasher,
+      public _errorHandler: ErrorHandler
     ) {}
 
     get jwtSecret() {
@@ -43,13 +46,17 @@ export const JWTAuthenticationController = JWTTokenResponder(
       return this._jwtHelper;
     }
 
+    get errorHandler() {
+      return this._errorHandler;
+    }
+
     public async login(req: Request, res: Response) {
       const { username, password } = req.body;
       if (
         !this._userValidator.username(username) ||
         !this._userValidator.password(password)
       ) {
-        res.status(400).end();
+        this._errorHandler(res, AuthenticationErrorType.InvalidRequestPayload);
         return;
       }
 
@@ -57,11 +64,15 @@ export const JWTAuthenticationController = JWTTokenResponder(
       try {
         storedUser = await this._userRepo.getUser(username);
         if (!storedUser) {
-          res.status(500).end();
+          this._errorHandler(res, AuthenticationErrorType.NoExistingUser);
           return;
         }
-      } catch {
-        res.status(500).end();
+      } catch (err) {
+        this._errorHandler(
+          res,
+          AuthenticationErrorType.ErrorGettingUser,
+          err as Error
+        );
         return;
       }
       const doesPasswordMatch = await this._passwordHasher.compare(
@@ -69,7 +80,7 @@ export const JWTAuthenticationController = JWTTokenResponder(
         storedUser.password
       );
       if (!doesPasswordMatch) {
-        res.status(401).end();
+        this._errorHandler(res, AuthenticationErrorType.PaswordMismatch);
         return;
       }
 
@@ -79,7 +90,7 @@ export const JWTAuthenticationController = JWTTokenResponder(
     public async refresh(req: Request, res: Response) {
       const refreshToken = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
       if (!refreshToken) {
-        res.status(401).end();
+        this._errorHandler(res, AuthenticationErrorType.NoRefreshToken);
         return;
       }
 
@@ -90,8 +101,12 @@ export const JWTAuthenticationController = JWTTokenResponder(
           refreshToken
         );
         username = tokenPayload["username"];
-      } catch {
-        res.status(401).end();
+      } catch (err) {
+        this._errorHandler(
+          res,
+          AuthenticationErrorType.InvalidRefreshToken,
+          err as Error
+        );
         return;
       }
 

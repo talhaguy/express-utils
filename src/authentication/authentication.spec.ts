@@ -1,59 +1,47 @@
 import { expect } from "chai";
-import { JWTAuthenticationController } from "./jwt-authentication-controller";
 import { Application, createExpressApp } from "../express-app";
+import { JWTHelper, PasswordHasher } from "./models";
 import {
-  JWTHelper,
-  PasswordHasher,
-  UserValidator,
-  UserRepo,
   REFRESH_TOKEN_COOKIE_NAME,
-  REFRESH_TOKEN_EXPIRY_MS,
-} from "./models";
-import { JWTRegistrationController } from "./jwt-registration-controller";
+  DEFAULT_REFRESH_TOKEN_EXPIRY_MS,
+} from "./constants";
 import { DefaultJWTHelper } from "./jwt-helper";
 import { DefaultPasswordHasher } from "./password-hasher";
-import { stub, SinonStub } from "sinon";
+import {
+  createJWTAuthenticationController,
+  createJWTRegistrationController,
+} from "./factory";
+import { InMemoryUserRepo } from "./user-repo";
 
 describe("authentication", () => {
   let app!: Application;
-  let getUserStub!: SinonStub;
   const passwordHasher: PasswordHasher = new DefaultPasswordHasher();
   const jwtHelper: JWTHelper = new DefaultJWTHelper();
+  const userRepo = new InMemoryUserRepo();
 
   before(async () => {
+    const hashedPassword = await passwordHasher.hash("asdfasdf");
+    await userRepo.createUser("a@a.com", hashedPassword);
+
     app = new Application(createExpressApp());
 
-    getUserStub = stub();
-    const userRepo: UserRepo = {
-      getUser() {
-        return getUserStub();
-      },
-      createUser() {
-        return Promise.resolve();
-      },
-    };
-
-    const userValidator: UserValidator = {
-      username: () => true,
-      password: () => true,
-    };
-
-    const jwtRegistrationCtrlr = new JWTRegistrationController(
+    const jwtRegistrationCtrlr = createJWTRegistrationController(
       "jwtsecret",
       "refreshsecret",
-      jwtHelper,
-      userRepo,
-      userValidator,
-      passwordHasher
+      {
+        jwtHelper,
+        userRepo,
+        passwordHasher,
+      }
     );
-
-    const jwtAuthCtrlr = new JWTAuthenticationController(
+    const jwtAuthCtrlr = createJWTAuthenticationController(
       "jwtsecret",
       "refreshsecret",
-      jwtHelper,
-      userRepo,
-      userValidator,
-      passwordHasher
+      {
+        jwtHelper,
+        userRepo,
+        passwordHasher,
+      }
     );
 
     app.expressApp.post(
@@ -64,15 +52,6 @@ describe("authentication", () => {
     app.expressApp.get("/refresh", jwtAuthCtrlr.refresh.bind(jwtAuthCtrlr));
 
     await app.start(3333);
-  });
-
-  beforeEach(async () => {
-    const hashedPassword = await passwordHasher.hash("asdfasdf");
-
-    getUserStub.resolves({
-      username: "a@a.com",
-      password: hashedPassword,
-    });
   });
 
   after(async () => {
@@ -94,8 +73,7 @@ describe("authentication", () => {
       expect(res.ok).to.be.false;
     });
 
-    it("should provide access and refresh token on successful registration", async () => {
-      getUserStub.resolves(null);
+    it("should create user and provide access and refresh token on successful registration", async () => {
       const res = await fetch("http://localhost:3333/register", {
         method: "post",
         headers: {
@@ -106,6 +84,10 @@ describe("authentication", () => {
           password: "asdfasdf",
         }),
       });
+
+      const user = await userRepo.getUser("b@b.com");
+      expect(user!.username).to.equal("b@b.com");
+
       expect(res.headers.get("set-cookie")).to.contain("refreshtoken=");
       const parsed = await res.json();
       expect(parsed.token).not.to.have.lengthOf(0);
@@ -158,7 +140,7 @@ describe("authentication", () => {
         {
           username: "a@a.com",
         },
-        REFRESH_TOKEN_EXPIRY_MS
+        DEFAULT_REFRESH_TOKEN_EXPIRY_MS
       );
       const res = await fetch("http://localhost:3333/refresh", {
         method: "get",
