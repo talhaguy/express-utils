@@ -1,7 +1,7 @@
 {
   "name": "express-utils",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.1.0",
+  "description": "Express JS utilities",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -9,9 +9,9 @@
     "test": "mocha",
     "test:watch": "mocha --watch"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": ["express", "utilities", "middleware"],
+  "author": "Muhammad Talha",
+  "license": "MIT",
   "devDependencies": {
     "@types/bcrypt": "^5.0.0",
     "@types/body-parser": "^1.19.2",
