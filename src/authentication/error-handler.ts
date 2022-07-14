@@ -4,9 +4,6 @@ export const defaultErrorHandler: ErrorHandler = (res, errorType) => {
   let status: number;
 
   switch (errorType) {
-    case AuthenticationErrorType.InvalidRequestPayload:
-      status = 400;
-      break;
     case AuthenticationErrorType.NoExistingUser:
       status = 500;
       break;

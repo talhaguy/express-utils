@@ -2,14 +2,13 @@ import { NextFunction, Request, Response } from "express";
 import {
   AuthenticationErrorType,
   ErrorHandler,
-  JWTHelper,
+  JWTTokenManager,
   JWTTokenPayload,
 } from "./models";
 
 export class JWTTokenAuthenticatorMiddleware {
   constructor(
-    private _jwtSecret: string,
-    private _jwtHelper: JWTHelper,
+    private _accessJWTTokenManager: JWTTokenManager<JWTTokenPayload>,
     private _errorHandler: ErrorHandler
   ) {}
 
@@ -24,10 +23,7 @@ export class JWTTokenAuthenticatorMiddleware {
 
     let payload: JWTTokenPayload;
     try {
-      payload = await this._jwtHelper.validate<JWTTokenPayload>(
-        this._jwtSecret,
-        token
-      );
+      payload = await this._accessJWTTokenManager.verify(token);
     } catch (err) {
       this._errorHandler(
         res,

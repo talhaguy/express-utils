@@ -1,17 +1,15 @@
 import jwt from "jsonwebtoken";
-import { JWTHelper } from "./models";
+import { JWTTokenManager } from "./models";
 
-export class DefaultJWTHelper implements JWTHelper {
-  public async create<T>(
-    secret: string,
-    payload: T,
-    expiresInMs: number
-  ): Promise<string> {
+export class DefaultJWTManager<Payload> implements JWTTokenManager<Payload> {
+  constructor(private _secret: string, private _expiresInMs: number) {}
+
+  public async create(payload: Payload): Promise<string> {
     return new Promise<string>((res, rej) => {
       jwt.sign(
         payload as Record<string, unknown>,
-        secret,
-        { algorithm: "HS256", expiresIn: expiresInMs / 1000 },
+        this._secret,
+        { algorithm: "HS256", expiresIn: this._expiresInMs / 1000 },
         function (err, token) {
           if (err) {
             rej(err);
@@ -27,9 +25,9 @@ export class DefaultJWTHelper implements JWTHelper {
     });
   }
 
-  public async validate<T>(secret: string, token: string): Promise<T> {
-    return new Promise<T>((res, rej) => {
-      jwt.verify(token, secret, { complete: true }, (err, decoded) => {
+  public async verify(token: string): Promise<Payload> {
+    return new Promise<Payload>((res, rej) => {
+      jwt.verify(token, this._secret, { complete: true }, (err, decoded) => {
         if (err) {
           rej(err);
           return;
@@ -38,7 +36,7 @@ export class DefaultJWTHelper implements JWTHelper {
           rej(new Error("Could not decode token"));
           return;
         }
-        res(decoded.payload as T);
+        res(decoded.payload as Payload);
       });
     });
   }

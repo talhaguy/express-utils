@@ -4,12 +4,11 @@ import { JWTTokenResponder } from "./jwt-token-responder";
 import {
   AuthenticationErrorType,
   ErrorHandler,
-  JWTHelper,
+  JWTTokenManager,
   JWTTokenPayload,
   PasswordHasher,
   User,
   UserRepo,
-  UserValidator,
 } from "./models";
 
 export interface LoginRequestPayload {
@@ -20,25 +19,19 @@ export interface LoginRequestPayload {
 export const JWTAuthenticationController = JWTTokenResponder(
   class JWTAuthenticationController {
     constructor(
-      public _jwtSecret: string,
-      public _refreshSecret: string,
-      public _jwtHelper: JWTHelper,
+      public _accessJWTTokenManager: JWTTokenManager<JWTTokenPayload>,
+      public _refreshTokenManager: JWTTokenManager<JWTTokenPayload>,
       public _userRepo: UserRepo,
-      public _userValidator: UserValidator,
       public _passwordHasher: PasswordHasher,
       public _errorHandler: ErrorHandler
     ) {}
 
-    get jwtSecret() {
-      return this._jwtSecret;
+    get accessJWTTokenManager() {
+      return this._accessJWTTokenManager;
     }
 
-    get refreshSecret() {
-      return this._refreshSecret;
-    }
-
-    get jwtHelper() {
-      return this._jwtHelper;
+    get refreshTokenManager() {
+      return this._refreshTokenManager;
     }
 
     get errorHandler() {
@@ -47,13 +40,6 @@ export const JWTAuthenticationController = JWTTokenResponder(
 
     public async login(req: Request, res: Response) {
       const { username, password } = req.body;
-      if (
-        !this._userValidator.username(username) ||
-        !this._userValidator.password(password)
-      ) {
-        this._errorHandler(res, AuthenticationErrorType.InvalidRequestPayload);
-        return;
-      }
 
       let storedUser: User | null;
       try {
@@ -91,8 +77,7 @@ export const JWTAuthenticationController = JWTTokenResponder(
 
       let username: string;
       try {
-        const tokenPayload = await this._jwtHelper.validate<JWTTokenPayload>(
-          this._refreshSecret,
+        const tokenPayload = await this._refreshTokenManager.verify(
           refreshToken
         );
         username = tokenPayload["username"];

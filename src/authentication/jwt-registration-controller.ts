@@ -3,10 +3,10 @@ import { JWTTokenResponder } from "./jwt-token-responder";
 import {
   AuthenticationErrorType,
   ErrorHandler,
-  JWTHelper,
+  JWTTokenManager,
+  JWTTokenPayload,
   PasswordHasher,
   UserRepo,
-  UserValidator,
 } from "./models";
 
 export interface RegisterRequestPayload {
@@ -17,25 +17,19 @@ export interface RegisterRequestPayload {
 export const JWTRegistrationController = JWTTokenResponder(
   class JWTRegistrationController {
     constructor(
-      public _jwtSecret: string,
-      public _refreshSecret: string,
-      public _jwtHelper: JWTHelper,
+      public _accessJWTTokenManager: JWTTokenManager<JWTTokenPayload>,
+      public _refreshTokenManager: JWTTokenManager<JWTTokenPayload>,
       public _userRepo: UserRepo,
-      public _userValidator: UserValidator,
       public _passwordHasher: PasswordHasher,
       public _errorHandler: ErrorHandler
     ) {}
 
-    get jwtSecret() {
-      return this._jwtSecret;
+    get accessJWTTokenManager() {
+      return this._accessJWTTokenManager;
     }
 
-    get refreshSecret() {
-      return this._refreshSecret;
-    }
-
-    get jwtHelper() {
-      return this._jwtHelper;
+    get refreshTokenManager() {
+      return this._refreshTokenManager;
     }
 
     get errorHandler() {
@@ -44,13 +38,6 @@ export const JWTRegistrationController = JWTTokenResponder(
 
     public async register(req: Request, res: Response) {
       const { username, password } = req.body;
-      if (
-        !this._userValidator.username(username) ||
-        !this._userValidator.password(password)
-      ) {
-        this._errorHandler(res, AuthenticationErrorType.InvalidRequestPayload);
-        return;
-      }
 
       try {
         const user = await this._userRepo.getUser(username);

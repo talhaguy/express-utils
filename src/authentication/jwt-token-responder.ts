@@ -3,19 +3,15 @@ import {
   AuthenticationErrorType,
   Constructor,
   ErrorHandler,
-  JWTHelper,
+  JWTTokenManager,
+  JWTTokenPayload,
 } from "./models";
-import {
-  DEFAULT_JWT_TOKEN_EXPIRY_MS,
-  REFRESH_TOKEN_COOKIE_NAME,
-  DEFAULT_REFRESH_TOKEN_EXPIRY_MS,
-} from "./constants";
+import { REFRESH_TOKEN_COOKIE_NAME } from "./constants";
 
 export function JWTTokenResponder<
   T extends Constructor<{
-    jwtSecret: string;
-    refreshSecret: string;
-    jwtHelper: JWTHelper;
+    accessJWTTokenManager: JWTTokenManager<JWTTokenPayload>;
+    refreshTokenManager: JWTTokenManager<JWTTokenPayload>;
     errorHandler: ErrorHandler;
   }>
 >(superClass: T) {
@@ -23,13 +19,9 @@ export function JWTTokenResponder<
     public async respondWithTokens(res: Response, username: string) {
       let jwtToken: string;
       try {
-        jwtToken = await this.jwtHelper.create(
-          this.jwtSecret,
-          {
-            username,
-          },
-          DEFAULT_JWT_TOKEN_EXPIRY_MS
-        );
+        jwtToken = await this.accessJWTTokenManager.create({
+          username,
+        });
       } catch (err) {
         this.errorHandler(
           res,
@@ -41,13 +33,9 @@ export function JWTTokenResponder<
 
       let newRefreshToken: string;
       try {
-        newRefreshToken = await this.jwtHelper.create(
-          this.refreshSecret,
-          {
-            username,
-          },
-          DEFAULT_REFRESH_TOKEN_EXPIRY_MS
-        );
+        newRefreshToken = await this.refreshTokenManager.create({
+          username,
+        });
       } catch (err) {
         this.errorHandler(
           res,

@@ -14,13 +14,9 @@ export interface UserRepo {
   createUser(username: string, password: string): Promise<void>;
 }
 
-export interface JWTHelper {
-  create<T = any>(
-    secret: string,
-    payload: T,
-    expiresInMs: number
-  ): Promise<string>;
-  validate<T = any>(secret: string, token: string): Promise<T>;
+export interface JWTTokenManager<Payload extends Record<string, any>> {
+  create(payload: Payload): Promise<string>;
+  verify(token: string): Promise<Payload>;
 }
 
 export interface PasswordHasher {
@@ -28,13 +24,7 @@ export interface PasswordHasher {
   compare(password: string, hashedPassword: string): Promise<boolean>;
 }
 
-export interface UserValidator {
-  username: (username: string) => boolean;
-  password: (password: string) => boolean;
-}
-
 export enum AuthenticationErrorType {
-  InvalidRequestPayload,
   NoExistingUser,
   UserExists,
   ErrorGettingUser,

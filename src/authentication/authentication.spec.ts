@@ -1,22 +1,26 @@
 import { expect } from "chai";
 import { Application, createExpressApp } from "../application/application";
-import { JWTHelper, PasswordHasher } from "./models";
+import { JWTTokenManager, JWTTokenPayload, PasswordHasher } from "./models";
 import {
   REFRESH_TOKEN_COOKIE_NAME,
   DEFAULT_REFRESH_TOKEN_EXPIRY_MS,
+  DEFAULT_JWT_TOKEN_EXPIRY_MS,
 } from "./constants";
-import { DefaultJWTHelper } from "./jwt-helper";
 import { DefaultPasswordHasher } from "./password-hasher";
 import {
   createJWTAuthenticationController,
   createJWTRegistrationController,
 } from "./factory";
 import { InMemoryUserRepo } from "./user-repo";
+import { DefaultJWTManager } from "./jwt-manager";
 
 describe("authentication", () => {
   let app!: Application;
+  const accessJWTTokenManager: JWTTokenManager<JWTTokenPayload> =
+    new DefaultJWTManager("jwtsecret", DEFAULT_JWT_TOKEN_EXPIRY_MS);
+  const refreshJWTTokenManager: JWTTokenManager<JWTTokenPayload> =
+    new DefaultJWTManager("refreshsecret", DEFAULT_REFRESH_TOKEN_EXPIRY_MS);
   const passwordHasher: PasswordHasher = new DefaultPasswordHasher();
-  const jwtHelper: JWTHelper = new DefaultJWTHelper();
   const userRepo = new InMemoryUserRepo();
 
   before(async () => {
@@ -29,7 +33,8 @@ describe("authentication", () => {
       "jwtsecret",
       "refreshsecret",
       {
-        jwtHelper,
+        accessJWTTokenManager,
+        refreshJWTTokenManager,
         userRepo,
         passwordHasher,
       }
@@ -38,7 +43,8 @@ describe("authentication", () => {
       "jwtsecret",
       "refreshsecret",
       {
-        jwtHelper,
+        accessJWTTokenManager,
+        refreshJWTTokenManager,
         userRepo,
         passwordHasher,
       }
@@ -135,13 +141,9 @@ describe("authentication", () => {
     });
 
     it("should provide access and refresh token when a valid refresh token exists", async () => {
-      const refreshToken = await jwtHelper.create(
-        "refreshsecret",
-        {
-          username: "a@a.com",
-        },
-        DEFAULT_REFRESH_TOKEN_EXPIRY_MS
-      );
+      const refreshToken = await refreshJWTTokenManager.create({
+        username: "a@a.com",
+      });
       const res = await fetch("http://localhost:3333/refresh", {
         method: "get",
         headers: {
