@@ -8,6 +8,10 @@ A package containing common express utilities.
 - Build: `pnpm run build`
 - Tests: `pnpm run test`
 
+## Publishing
+
+Run `pnpm run prepublish`. This will build and copy the `package.json` into `dist`. Go into this folder to publish.
+
 ## Documentation
 
 WIP
