@@ -8,7 +8,8 @@
     "lint": "eslint src/**",
     "test": "mocha",
     "test:watch": "mocha --watch",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "format": "prettier --write ./src"
   },
   "keywords": ["express", "utilities", "middleware"],
   "author": "Muhammad Talha",
