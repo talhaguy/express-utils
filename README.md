@@ -15,3 +15,7 @@ Run `pnpm run prepublish`. This will build and copy the `package.json` into `dis
 ## Documentation
 
 WIP
+
+---
+
+TODO: Make express peer dependency

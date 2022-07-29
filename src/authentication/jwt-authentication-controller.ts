@@ -16,25 +16,15 @@ export interface LoginRequestPayload {
   password: string;
 }
 
-class _JWTAuthenticationController {
+export class JWTAuthenticationController extends JWTTokenResponder {
   constructor(
-    public _accessJWTTokenManager: JWTTokenManager<JWTTokenPayload>,
-    public _refreshTokenManager: JWTTokenManager<JWTTokenPayload>,
-    public _userRepo: UserRepo,
-    public _passwordHasher: PasswordHasher,
-    public _errorHandler: ErrorHandler
-  ) {}
-
-  get accessJWTTokenManager() {
-    return this._accessJWTTokenManager;
-  }
-
-  get refreshTokenManager() {
-    return this._refreshTokenManager;
-  }
-
-  get errorHandler() {
-    return this._errorHandler;
+    _accessJWTTokenManager: JWTTokenManager<JWTTokenPayload>,
+    _refreshTokenManager: JWTTokenManager<JWTTokenPayload>,
+    _errorHandler: ErrorHandler,
+    private _userRepo: UserRepo,
+    private _passwordHasher: PasswordHasher
+  ) {
+    super(_accessJWTTokenManager, _refreshTokenManager, _errorHandler);
   }
 
   public async login(req: Request, res: Response) {
@@ -89,13 +79,4 @@ class _JWTAuthenticationController {
 
     this.respondWithTokens(res, username);
   }
-
-  // to be overridden by subclass
-  public async respondWithTokens(_: Response, __: string) {
-    return;
-  }
 }
-
-export const JWTAuthenticationController = JWTTokenResponder(
-  _JWTAuthenticationController
-);
