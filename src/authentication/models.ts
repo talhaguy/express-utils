@@ -1,9 +1,5 @@
 import { Response } from "express";
 
-export interface Constructor<T> {
-  new (...args: any[]): T;
-}
-
 export interface User {
   username: string;
   password: string;

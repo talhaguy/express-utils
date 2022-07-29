@@ -1,7 +1,8 @@
-import express, { Express } from "express";
+import express, { Express, NextFunction, Request, Response } from "express";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import { Server } from "http";
+import { RequestMethod, Constructor } from "../models";
 
 export function createExpressApp(): Express {
   const app = express();
@@ -45,4 +46,50 @@ export class Application {
       });
     });
   }
+
+  public addHandler(
+    method: RequestMethod,
+    path: string,
+    ...functionHandlers: FunctionHandler[]
+  ): void;
+  public addHandler(
+    method: RequestMethod,
+    path: string,
+    ...classHandlers: ClassHandler[]
+  ): void;
+  public addHandler(
+    method: RequestMethod,
+    path: string,
+    ...classOrFunctionHandlers: FunctionHandler[] | ClassHandler[]
+  ): void {
+    if (isClassHandlerArray(classOrFunctionHandlers)) {
+      const handlers = classOrFunctionHandlers.map(({ instance, handler }) => {
+        return handler.bind(instance);
+      });
+      this._expressApp[method](path, ...handlers);
+      return;
+    }
+
+    this._expressApp[method](path, ...classOrFunctionHandlers);
+  }
+}
+
+export interface FunctionHandler {
+  (req: Request, res: Response, next?: NextFunction): void;
+}
+
+export interface ClassHandler {
+  instance: InstanceType<Constructor>;
+  handler: (req: Request, res: Response, next?: NextFunction) => void;
+}
+
+function isClassHandlerArray(object: unknown[]): object is ClassHandler[] {
+  for (const o of object) {
+    if (
+      typeof (o as ClassHandler).instance !== "object" ||
+      typeof (o as ClassHandler).handler !== "function"
+    )
+      return false;
+  }
+  return true;
 }

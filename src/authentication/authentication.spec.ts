@@ -13,6 +13,7 @@ import {
 } from "./factory";
 import { InMemoryUserRepo } from "./user-repo";
 import { DefaultJWTManager } from "./jwt-manager";
+import { RequestMethod } from "../models";
 
 describe("authentication", () => {
   let app!: Application;
@@ -50,12 +51,18 @@ describe("authentication", () => {
       }
     );
 
-    app.expressApp.post(
-      "/register",
-      jwtRegistrationCtrlr.register.bind(jwtRegistrationCtrlr)
-    );
-    app.expressApp.post("/login", jwtAuthCtrlr.login.bind(jwtAuthCtrlr));
-    app.expressApp.get("/refresh", jwtAuthCtrlr.refresh.bind(jwtAuthCtrlr));
+    app.addHandler(RequestMethod.Post, "/register", {
+      instance: jwtRegistrationCtrlr,
+      handler: jwtRegistrationCtrlr.register,
+    });
+    app.addHandler(RequestMethod.Post, "/login", {
+      instance: jwtAuthCtrlr,
+      handler: jwtAuthCtrlr.login,
+    });
+    app.addHandler(RequestMethod.Get, "/refresh", {
+      instance: jwtAuthCtrlr,
+      handler: jwtAuthCtrlr.refresh,
+    });
 
     await app.start(3333);
   });
