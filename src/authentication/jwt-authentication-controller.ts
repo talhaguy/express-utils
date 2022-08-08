@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { REFRESH_TOKEN_COOKIE_NAME } from "./constants";
-import { JWTTokenResponder } from "./jwt-token-responder";
+import { respondWithTokens } from "./jwt-token-responder";
 import {
   AuthenticationErrorType,
   ErrorHandler,
@@ -16,16 +16,14 @@ export interface LoginRequestPayload {
   password: string;
 }
 
-export class JWTAuthenticationController extends JWTTokenResponder {
+export class JWTAuthenticationController {
   constructor(
-    _accessJWTTokenManager: JWTTokenManager<JWTTokenPayload>,
-    _refreshTokenManager: JWTTokenManager<JWTTokenPayload>,
-    _errorHandler: ErrorHandler,
+    private _accessJWTTokenManager: JWTTokenManager<JWTTokenPayload>,
+    private _refreshTokenManager: JWTTokenManager<JWTTokenPayload>,
+    private _errorHandler: ErrorHandler,
     private _userRepo: UserRepo,
     private _passwordHasher: PasswordHasher
-  ) {
-    super(_accessJWTTokenManager, _refreshTokenManager, _errorHandler);
-  }
+  ) {}
 
   public async login(req: Request, res: Response) {
     const { username, password } = req.body;
@@ -54,7 +52,13 @@ export class JWTAuthenticationController extends JWTTokenResponder {
       return;
     }
 
-    this.respondWithTokens(res, username);
+    respondWithTokens(
+      this._accessJWTTokenManager,
+      this._refreshTokenManager,
+      this._errorHandler,
+      res,
+      username
+    );
   }
 
   public async refresh(req: Request, res: Response) {
@@ -77,6 +81,12 @@ export class JWTAuthenticationController extends JWTTokenResponder {
       return;
     }
 
-    this.respondWithTokens(res, username);
+    respondWithTokens(
+      this._accessJWTTokenManager,
+      this._refreshTokenManager,
+      this._errorHandler,
+      res,
+      username
+    );
   }
 }

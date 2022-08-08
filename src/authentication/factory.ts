@@ -13,7 +13,7 @@ import {
   PasswordHasher,
   UserRepo,
 } from "./models";
-import { DefaultPasswordHasher } from "./password-hasher";
+import { BcryptPasswordHasher } from "./password-hasher";
 import { InMemoryUserRepo } from "./user-repo";
 
 export function createJWTAuthenticationController(
@@ -30,7 +30,7 @@ export function createJWTAuthenticationController(
     ),
     errorHandler = defaultErrorHandler,
     userRepo = new InMemoryUserRepo(),
-    passwordHasher = new DefaultPasswordHasher(),
+    passwordHasher = new BcryptPasswordHasher(),
   }: JWTControllerParams = {}
 ): InstanceType<typeof JWTAuthenticationController> {
   return new JWTAuthenticationController(
@@ -56,7 +56,7 @@ export function createJWTRegistrationController(
     ),
     errorHandler = defaultErrorHandler,
     userRepo = new InMemoryUserRepo(),
-    passwordHasher = new DefaultPasswordHasher(),
+    passwordHasher = new BcryptPasswordHasher(),
   }: JWTControllerParams = {}
 ): InstanceType<typeof JWTRegistrationController> {
   return new JWTRegistrationController(
@@ -68,7 +68,7 @@ export function createJWTRegistrationController(
   );
 }
 
-interface JWTControllerParams {
+export interface JWTControllerParams {
   accessJWTTokenManager?: JWTTokenManager<JWTTokenPayload>;
   refreshJWTTokenManager?: JWTTokenManager<JWTTokenPayload>;
   errorHandler?: ErrorHandler;

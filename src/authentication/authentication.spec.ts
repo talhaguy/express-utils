@@ -6,7 +6,7 @@ import {
   DEFAULT_REFRESH_TOKEN_EXPIRY_MS,
   DEFAULT_JWT_TOKEN_EXPIRY_MS,
 } from "./constants";
-import { DefaultPasswordHasher } from "./password-hasher";
+import { BcryptPasswordHasher } from "./password-hasher";
 import {
   createJWTAuthenticationController,
   createJWTRegistrationController,
@@ -21,7 +21,7 @@ describe("authentication", () => {
     new DefaultJWTManager("jwtsecret", DEFAULT_JWT_TOKEN_EXPIRY_MS);
   const refreshJWTTokenManager: JWTTokenManager<JWTTokenPayload> =
     new DefaultJWTManager("refreshsecret", DEFAULT_REFRESH_TOKEN_EXPIRY_MS);
-  const passwordHasher: PasswordHasher = new DefaultPasswordHasher();
+  const passwordHasher: PasswordHasher = new BcryptPasswordHasher();
   const userRepo = new InMemoryUserRepo();
 
   before(async () => {

@@ -47,6 +47,7 @@ export class Application {
     });
   }
 
+  // TODO: cover case in which mixed types (function or class method) are passed
   public addHandler(
     method: RequestMethod,
     path: string,

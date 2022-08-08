@@ -3,7 +3,7 @@ import { PasswordHasher } from "./models";
 
 export const DEFAULT_PASSWSORD_HASHER_SALT_ROUNDS = 10;
 
-export class DefaultPasswordHasher implements PasswordHasher {
+export class BcryptPasswordHasher implements PasswordHasher {
   public async hash(password: string) {
     return bcrypt.hash(password, DEFAULT_PASSWSORD_HASHER_SALT_ROUNDS);
   }

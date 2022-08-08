@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { JWTTokenResponder } from "./jwt-token-responder";
+import { respondWithTokens } from "./jwt-token-responder";
 import {
   AuthenticationErrorType,
   ErrorHandler,
@@ -14,16 +14,14 @@ export interface RegisterRequestPayload {
   password: string;
 }
 
-export class JWTRegistrationController extends JWTTokenResponder {
+export class JWTRegistrationController {
   constructor(
-    _accessJWTTokenManager: JWTTokenManager<JWTTokenPayload>,
-    _refreshTokenManager: JWTTokenManager<JWTTokenPayload>,
-    _errorHandler: ErrorHandler,
+    private _accessJWTTokenManager: JWTTokenManager<JWTTokenPayload>,
+    private _refreshTokenManager: JWTTokenManager<JWTTokenPayload>,
+    private _errorHandler: ErrorHandler,
     private _userRepo: UserRepo,
     private _passwordHasher: PasswordHasher
-  ) {
-    super(_accessJWTTokenManager, _refreshTokenManager, _errorHandler);
-  }
+  ) {}
 
   public async register(req: Request, res: Response) {
     const { username, password } = req.body;
@@ -66,6 +64,12 @@ export class JWTRegistrationController extends JWTTokenResponder {
       return;
     }
 
-    this.respondWithTokens(res, username);
+    respondWithTokens(
+      this._accessJWTTokenManager,
+      this._refreshTokenManager,
+      this._errorHandler,
+      res,
+      username
+    );
   }
 }
